@@ -1,0 +1,14 @@
+.metadata
+*.cproject
+*.project
+*.prefs
+*.cmd
+*.user
+*.map
+*.xml
+*.d
+*.obj
+*.mk
+*.opt
+makefile
+.DS_Store
