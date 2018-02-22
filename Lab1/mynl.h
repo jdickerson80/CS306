@@ -6,13 +6,18 @@
 #include <getopt.h>
 #include <errno.h>
 
-typedef enum Style_t
+typedef enum StyleTypes_t
 {
 	AllLines	= 'a',
 	NoLines		= 'n',
 	NonEmpty	= 't'
-} Style;
+} StyleTypes;
 
+typedef enum CommandLineArguements_t
+{
+	Style	= 'b',
+	String	= 's'
+} CommandLineArguements;
 
 /**
  * @brief getUsage gets the default usage of the program
@@ -33,7 +38,7 @@ char* defaultSeparator();
  * @param separator
  * @return
  */
-int process_stream( FILE* fpntr, Style style, char* separator );
+int process_stream( FILE* fpntr, StyleTypes styleTypes, char* separator );
 
 /**
  * @brief fgetline is to read and return the next line from the open file stream fpntr.

@@ -30,12 +30,12 @@ char* defaultSeparator()
 	return DefaultSeparator;
 }
 
-int process_stream( FILE* fpntr, Style style, char* separator )
+int process_stream( FILE* fpntr, StyleTypes styleTypes, char* separator )
 {
 	char* line;
 
 	// switch on the specified style
-	switch ( style )
+	switch ( styleTypes )
 	{
 	case AllLines:
 		while ( ( line = fgetline( fpntr ) ) != NULL )
@@ -70,7 +70,7 @@ int process_stream( FILE* fpntr, Style style, char* separator )
 			}
 		}
 		break;
-	// default case to catch user's garbage input...
+		// default case to catch user's garbage input...
 	default:
 		fprintf( stderr, "Incorrect style arguement given.\n%s", getUsage() );
 		return EXIT_FAILURE;

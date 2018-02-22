@@ -24,10 +24,10 @@ int main( int argc, char* argv[] )
 	{
 		switch ( opt )
 		{
-		case 'b':
+		case Style:
 			style = *optarg;
 			break;
-		case 's':
+		case String:
 			separator = optarg;
 			break;
 		default: /* '?' */
