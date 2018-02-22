@@ -13,10 +13,11 @@ typedef enum Style_t
 	NonEmpty	= 't'
 } Style;
 
+
 /**
  * @brief getUsage gets the default usage of the program
  */
-char* getUsage();
+const char* const getUsage();
 
 /**
  * @brief defaultSeparator
@@ -27,12 +28,10 @@ char* defaultSeparator();
 /**
  * @brief process_stream() is to take an open file stream fpntr, and carry out appropriate
  * actions on it to produce correct output for the file (given the specified options).
- * – You can have any additional parameters you want and any return type you want
- *		(replace the ????’s as desired).
- * – Think about what info needs to be passed from main to this function and whether
- *		any info needs to be passed back to main (in the return value).
  * @param fpntr
- * @param sdf
+ * @param style
+ * @param separator
+ * @return
  */
 int process_stream( FILE* fpntr, Style style, char* separator );
 
