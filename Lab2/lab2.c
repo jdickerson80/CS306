@@ -16,8 +16,11 @@ typedef enum Style_t
 } Style;
 
 /**
-* Prototype declarations
+**************************
+* Prototype declarations *
+**************************
 */
+
 /**
 * @brief getUsage gets the default usage of the program
 */
@@ -29,7 +32,8 @@ const char* const getUsage();
 * @param fd
 * @param style
 * @param separator
-* @return
+* @param lineNumberWidth the beginning line width
+* @return EXIT_FAILURE for failure and EXIT_SUCCESS for success
 */
 int process_stream( int fd, Style style, char* separator, int lineNumberWidth );
 
@@ -37,15 +41,15 @@ int process_stream( int fd, Style style, char* separator, int lineNumberWidth );
 * @brief fgetline is to read and return the next line from the open file stream fpntr.
 * – It is to return the line as a valid C string.
 * – It should return NULL if an I/O error occurs during its execution or if it immediately encounters the file-end.
-* @param fd
+* @param fd file descriptor
 * @return
 */
 char* fgetline( int fd );
 
 /**
- * @brief fgetchar
- * @param fd
- * @return
+ * @brief fgetchar gets a character from the buffer
+ * @param fd file to read from
+ * @return character
  */
 int fgetchar( int fd );
 
@@ -88,8 +92,10 @@ int main( int argc, char* argv[] )
 		}
 	}
 
+	// set the file arg to the current index
 	fileArguement = optind;
 
+	// if the there is file paths given in the arguement
 	if ( fileArguement < argc )
 	{
 		// loop through the files, doing the nl thang
@@ -101,6 +107,7 @@ int main( int argc, char* argv[] )
 			// incorrect file give, so set the error and continue
 			if ( fileDescriptor == -1 )
 			{
+				// set the error, and restart the loop to open the next file
 				fprintf( stderr, "Invalid file arguement given.\n" );
 				error = 1;
 				continue;
@@ -109,21 +116,17 @@ int main( int argc, char* argv[] )
 			// process the stream
 			if ( process_stream( fileDescriptor, style, separator, lineNumberWidth ) == EXIT_FAILURE )
 			{
-				// stream ran into a problem, so close the file, and set the error flag
-				close( fileDescriptor );
 				error = 1;
-				break;
 			}
 
 			// close the file
 			close( fileDescriptor );
 		}
 	}
-	else
+	else // no files in the argument
 	{
-		int fileDescriptor = STDIN_FILENO;
-		process_stream( fileDescriptor, style, separator, lineNumberWidth );
-		close( fileDescriptor );
+		// process the stream from stdin
+		process_stream( STDIN_FILENO, style, separator, lineNumberWidth );
 	}
 
 	// return the error code. <3 ternary
@@ -141,12 +144,15 @@ const char* const getUsage()
 	return usage;
 }
 
-int process_stream(int fd, Style style, char* separator, int lineNumberWidth )
+int process_stream( int fd, Style style, char* separator, int lineNumberWidth )
 {
+	// local variables
 	static unsigned int lineCounter = 0;
 	char* line;
 
+	// calculate the blank line width
 	int blankLineWidth = lineNumberWidth + strlen( separator );
+
 	// switch on the specified style
 	switch ( style )
 	{
@@ -193,28 +199,40 @@ int process_stream(int fd, Style style, char* separator, int lineNumberWidth )
 
 char* fgetline( int fd )
 {
+	// Macros
 #define NEW_LINE_NULL_TERMINATOR_ADDER ( 2 )
-#define INITIAL_BUFFER_SIZE ( 1024 + NEW_LINE_NULL_TERMINATOR_ADDER )
+#define INITIAL_BUFFER_SIZE ( 10 + NEW_LINE_NULL_TERMINATOR_ADDER )
 #define BUFFER_SIZE_ADDER ( INITIAL_BUFFER_SIZE / 4 )
+	// init local variables
 	char* buffer = (char*)malloc( INITIAL_BUFFER_SIZE );
 	size_t bufferSize = INITIAL_BUFFER_SIZE;
 	int position = 0;
 	int nextChar;
 
+	// get the next char and check for new line and EOF
 	while ( ( nextChar = fgetchar( fd ) ) != '\n' && nextChar != EOF )
 	{
-		if ( position >= bufferSize )
+		// if the position PLUS \0 and \n is empty
+		if ( position + NEW_LINE_NULL_TERMINATOR_ADDER >= bufferSize )
 		{
+			// add the adder to the current buffer size
 			bufferSize += BUFFER_SIZE_ADDER;
+
+			// reallocate the new memory
 			buffer = (char*)realloc( (void*)buffer, bufferSize );
-			printf("buff size %u ptr %p\n", bufferSize, buffer );
 		}
+
+		// increment the position and set it equal to the next char
 		buffer[ position++ ] = nextChar;
 	}
 
-
+	// if the next char is eof and the position is zero or an error
 	if ( nextChar == EOF && ( position == 0 || errno ) )
 	{
+		// free the buffer since it will return null
+		free( buffer );
+
+		// return null
 		return NULL;
 	}
 
@@ -222,30 +240,37 @@ char* fgetline( int fd )
 	buffer[ position++ ] = '\n';
 	buffer[ position++ ] = '\0';
 
-	// return line buffer
+	// return buffer
 	return buffer;
 }
 
 int fgetchar( int fd )
 {
 #define CHARACTER_BUFFER_SIZE ( 512 )
+	// initialize the local variables
 	static char buffer[ CHARACTER_BUFFER_SIZE ];
 	static size_t bufferSize = sizeof( buffer) / sizeof( buffer[ 0 ] );
 	static int position = 0;
 	static int numbersRead = 0;
 
+	// if the position is >= numbers read
 	if ( position >= numbersRead )
 	{
+		// fill in the buffer
 		numbersRead = read( fd, (void*)buffer, bufferSize );
+
+		// error in numbers read
 		if ( numbersRead <= 0 )
 		{
+			// return eof
 			return EOF;
 		}
-		else
+		else // all good, so reset the position
 		{
 			position = 0;
 		}
 	}
 
+	// return the buffer
 	return buffer[ position++ ];
 }
