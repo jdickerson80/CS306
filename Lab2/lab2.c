@@ -201,8 +201,8 @@ char* fgetline( int fd )
 {
 	// Macros
 #define NEW_LINE_NULL_TERMINATOR_ADDER ( 2 )
-#define INITIAL_BUFFER_SIZE ( 10 + NEW_LINE_NULL_TERMINATOR_ADDER )
-#define BUFFER_SIZE_ADDER ( INITIAL_BUFFER_SIZE / 4 )
+#define INITIAL_BUFFER_SIZE ( 50 + NEW_LINE_NULL_TERMINATOR_ADDER )
+#define BUFFER_SIZE_ADDER ( 10 )
 	// init local variables
 	char* buffer = (char*)malloc( INITIAL_BUFFER_SIZE );
 	size_t bufferSize = INITIAL_BUFFER_SIZE;
@@ -212,7 +212,7 @@ char* fgetline( int fd )
 	// get the next char and check for new line and EOF
 	while ( ( nextChar = fgetchar( fd ) ) != '\n' && nextChar != EOF )
 	{
-		// if the position PLUS \0 and \n is empty
+		// if the buffer position PLUS \0 and \n is >= the buffer
 		if ( position + NEW_LINE_NULL_TERMINATOR_ADDER >= bufferSize )
 		{
 			// add the adder to the current buffer size
