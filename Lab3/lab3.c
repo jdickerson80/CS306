@@ -112,6 +112,7 @@ int main( int argc, char* argv[] )
 	PipeInfo pipes[ numberOfCores ];
 	char* command = argv[ 2 ];
 	char commandArg[ commandArgSize ];
+	int hasErrors = false;
 
 	// build the command argument string
 	for ( size_t i = 3; i < filePosition; ++i )
@@ -166,11 +167,7 @@ int main( int argc, char* argv[] )
 			pipe2( pipes[ availablePipe ].pipeFileDescriptors, O_NONBLOCK );
 
 			// run the command in a subprocess
-			if ( run_command_in_subprocess( argv[ ++filePosition ], command, commandArg, &pipes[ availablePipe ] ) )
-			{
-				// there is an error, so exit
-				exit( EXIT_FAILURE );
-			}
+			hasErrors |= run_command_in_subprocess( argv[ ++filePosition ], command, commandArg, &pipes[ availablePipe ] );
 
 			// increment the process counter
 			++runningProcessCounter;
@@ -181,11 +178,7 @@ int main( int argc, char* argv[] )
 			pid_t pid = wait( &status );
 
 			// close down the subprocess
-			if ( process_terminated_subprocess( status, pid, numberOfCores, pipes ) )
-			{
-				// there is an error, so exit
-				exit( EXIT_FAILURE );
-			}
+			hasErrors |= process_terminated_subprocess( status, pid, numberOfCores, pipes );
 
 			// decrement the process counter
 			--runningProcessCounter;
@@ -193,21 +186,17 @@ int main( int argc, char* argv[] )
 	}
 
 	// done forking processes, time to collect them
-	for ( size_t i = 0; i <= numberOfFiles; ++i )
+	for ( size_t i = 0; i < numberOfFiles; ++i )
 	{
 		// wait for a subprocess to complete
 		pid_t pid = wait( &status );
 
 		// close down the subprocess
-		if ( process_terminated_subprocess( status, pid, numberOfCores, pipes ) )
-		{
-			// there is an error, so exit
-			exit( EXIT_FAILURE );
-		}
+		hasErrors |= process_terminated_subprocess( status, pid, numberOfCores, pipes );
 	}
 
-	// return exit success
-	return EXIT_SUCCESS;
+	// return exit status
+	return hasErrors ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
 void printUsage()
