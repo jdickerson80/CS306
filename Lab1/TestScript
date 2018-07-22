@@ -1,0 +1,12 @@
+#!/bin/bash
+args="file1"
+
+echo "nl $args:"
+nl $args > correct
+./mynl $args > output
+diff correct output
+args="-bt file1"
+echo "nl $args:"
+nl $args > correct
+./mynl $args > output
+diff correct output
